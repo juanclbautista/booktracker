@@ -98,7 +98,7 @@ def update_listbox_with_search_results(results):
     details_label.config(text="")
 
 def setup_gui(app):
-    global entry_title, entry_author, entry_publisher  # Declare them as global variables
+    global entry_title, entry_author, entry_publisher, search_entry  # Declare them as global variables
 
     input_frame = tk.Frame(app, padx=10, pady=5, relief=tk.RAISED, borderwidth=1)
     input_frame.pack()
@@ -108,26 +108,40 @@ def setup_gui(app):
     entry_title = tk.Entry(input_frame)
     entry_title.grid(row=0, column=1, padx=5, pady=5)
 
+    author_label = tk.Label(input_frame, text="Author:")
+    author_label.grid(row=1, column=0, padx=5, pady=5)
     entry_author = tk.Entry(input_frame)
     entry_author.grid(row=1, column=1, padx=5, pady=5)
 
+    publisher_label = tk.Label(input_frame, text="Publisher:")
+    publisher_label.grid(row=2, column=0, padx=5, pady=5)
     entry_publisher = tk.Entry(input_frame)
     entry_publisher.grid(row=2, column=1, padx=5, pady=5)
 
-    add_button = tk.Button(input_frame, text="Add Book", command=get_entry_values)
+    # Create a separate frame for the buttons
+    button_frame = tk.Frame(input_frame)
+    button_frame.grid(row=3, column=0, columnspan=2, padx=5, pady=5)
 
-    add_button.grid(row=3, column=0, columnspan=2, padx=5, pady=5)
+    add_button = tk.Button(button_frame, text="Add Book", command=get_entry_values)
+    add_button.grid(row=0, column=0, padx=2, pady=5)
 
-    sort_button = tk.Button(input_frame, text="Sort Titles", command=sort_titles)
-    sort_button.grid(row=3, column=2, padx=5, pady=5)
+    remove_button = tk.Button(button_frame, text="Remove Book", command=remove_book)
+    remove_button.grid(row=0, column=1, padx=3, pady=5)
+
+    sort_search_frame = tk.Frame(input_frame)
+    sort_search_frame.grid(row=4, column=0, columnspan=2, padx=5, pady=5)
+
+    sort_button = tk.Button(sort_search_frame, text="Sort Titles", command=sort_titles)
+    sort_button.grid(row=0, column=0, padx=5, pady=2)
+
+    search_button = tk.Button(sort_search_frame, text="Search Titles", command=search_titles)
+    search_button.grid(row=0, column=1, padx=5, pady=3)
 
     search_label = tk.Label(input_frame, text="Search:")
-    search_label.grid(row=4, column=0, padx=5, pady=5)
-    search_entry = tk.Entry(input_frame)
-    search_entry.grid(row=4, column=1, padx=5, pady=5)
+    search_label.grid(row=5, column=0, padx=5, pady=5)
 
-    search_button = tk.Button(input_frame, text="Search Titles", command=search_titles)
-    search_button.grid(row=4, column=2, padx=5, pady=5)
+    search_entry = tk.Entry(input_frame)
+    search_entry.grid(row=5, column=1, padx=5, pady=5)
 
     list_frame = tk.Frame(app, padx=10, pady=5, relief=tk.RAISED, borderwidth=1)
     list_frame.pack()
@@ -140,13 +154,14 @@ def setup_gui(app):
 
     listbox.bind("<<ListboxSelect>>", on_select)
 
-    return listbox, list_frame, details_label
+    return listbox, list_frame, details_label, search_entry
+
 
 
 
 if __name__ == "__main__":
     book_titles = []
     app = create_app()
-    listbox, list_frame, details_label = setup_gui(app)
+    listbox, list_frame, details_label, search_entry = setup_gui(app)
     load_data()
     app.mainloop()
