@@ -1,19 +1,47 @@
 import tkinter as tk
-from tkinter import messagebox
-from tkinter import PhotoImage
-from PIL import Image, ImageTk
 import json
+import csv
+import sys
+from tkinter import messagebox
+from tkinter import filedialog
+
 
 def create_app():
     app = tk.Tk()
     app.title("Book Organizer")
     load_data()
     app.protocol("WM_DELETE_WINDOW", on_close)
+
+    # Keyboard shortcuts added
+    app.bind("<Control-a>", lambda event: get_entry_values())
+    app.bind("<Control-r>", lambda event: remove_book())
+
     return app
 
+def export_to_csv():
+    # Ask the user to choose a file name for the CSV File
+    file_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV Files", "*.csv")])
+
+    # If the user cancels the file dialog, return
+    if not file_path:
+        return
+    
+    # Write the book list to the CSV file
+    try:
+        with open(file_path, "w", newline="", encoding="utf-8") as file:
+            writer = csv.writer(file)
+            for book in book_titles:
+                writer.writerow([book])
+        
+        messagebox.showinfo("Export Success", "Book list exported to CSV File.")
+    except Exception as e:
+        messagebox.showerror("Export Error", f"An error occurred while exporting to CSV: {e}")
+
 def on_close():
-    save_data()
-    app.destroy()
+    if messagebox.askokcancel("Quit", "Do you want to quit?"):
+        save_data()
+        app.destroy()
+        sys.exit()
 
 def get_entry_values():
     book_title = entry_title.get()
@@ -36,9 +64,6 @@ def add_book(book_title, author, publisher):
     entry_publisher.delete(0, tk.END)
     # Reconnect the event binding after updating the listbox
     listbox.bind("<<ListboxSelect>>", on_select)
-
-
-
 
 def remove_book():
     selected_index = listbox.curselection()
@@ -68,11 +93,6 @@ def update_listbox():
         listbox.insert(tk.END, title)
     details_label.config(text="")
 
-def resize_image(image_path, width, height):
-    image = Image.open(image_path)
-    resized_image = image.resize((width, height), Image.LANCZOS)
-    return ImageTk.PhotoImage(resized_image)
-
 def on_select(event):
     selected_index = listbox.curselection()
     if selected_index:
@@ -96,6 +116,14 @@ def update_listbox_with_search_results(results):
     for title in results:
         listbox.insert(tk.END, title)
     details_label.config(text="")
+
+def show_saved_data():
+    try:
+        with open("book_titles.json", "r") as file:
+            data = json.load(file)
+            print(data)  # You can display or process the data as needed
+    except FileNotFoundError:
+        print("JSON file not found.")
 
 def setup_gui(app):
     global entry_title, entry_author, entry_publisher, search_entry  # Declare them as global variables
@@ -132,13 +160,16 @@ def setup_gui(app):
     sort_search_frame.grid(row=4, column=0, columnspan=2, padx=5, pady=5)
 
     sort_button = tk.Button(sort_search_frame, text="Sort Titles", command=sort_titles)
-    sort_button.grid(row=0, column=0, padx=5, pady=2)
+    sort_button.grid(row=0, column=0, padx=2, pady=5)
 
     search_button = tk.Button(sort_search_frame, text="Search Titles", command=search_titles)
-    search_button.grid(row=0, column=1, padx=5, pady=3)
+    search_button.grid(row=0, column=1, padx=3, pady=5)
 
     search_label = tk.Label(input_frame, text="Search:")
     search_label.grid(row=5, column=0, padx=5, pady=5)
+
+    export_button = tk.Button(button_frame, text="Export CSV", command=export_to_csv)
+    export_button.grid(row=0, column=2, padx=3, pady=5)
 
     search_entry = tk.Entry(input_frame)
     search_entry.grid(row=5, column=1, padx=5, pady=5)
